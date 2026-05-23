@@ -56,16 +56,20 @@ class TravelService {
 
       try {
         const jsonMatch =
-          fullResponse.match(/```json\n([\s\S]*?)```/) ||
-          fullResponse.match(/```\n([\s\S]*?)```/) ||
-          fullResponse.match(/\{[\s\S]*?}/);
-        const resData = JSON.parse(jsonMatch[1]);
+          fullResponse.match(/```json\n([\s\S]*?)\n```/) ||
+          fullResponse.match(/```\n([\s\S]*?)\n```/) ||
+          fullResponse.match(/\{[\s\S]*\}/);
+        
+        const jsonStr = jsonMatch[1] || jsonMatch[0];
+        const resData = JSON.parse(jsonStr);
+        console.log("resData:", resData);
         return resData;
       } catch (error) {
         return {
           success: false,
           message: "JSON解析失败",
           error: error.message,
+          fullResponse,
         };
       }
     } catch (error) {
@@ -77,6 +81,7 @@ class TravelService {
     return [
       new HumanMessage(`
       你是一个专业的旅游推荐助手，你的任务是根据用户的输入，推荐一个合适的旅游计划。
+
       请根据以下输入，推荐一个合适的旅游计划：
       目的地：${city}
       预算：${budget}元
@@ -132,11 +137,11 @@ class TravelService {
             "other": "其他杂费"
           },
           "tips": ["提示1","提示2","提示3"],
-          "warning": ["注意事项1","注意事项2"]
+          "warnings": ["注意事项1","注意事项2"]
         }
       }
 
-      请确保输出的JSON格式正确，可以被解析。
+      请确保输出的JSON格式正确，可以被解析，仅输出纯JSON文本,不包含思考过程。
       `),
     ];
   }
